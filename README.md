@@ -1,2 +1,1 @@
-# NFTAuation
 # NFTAuction
