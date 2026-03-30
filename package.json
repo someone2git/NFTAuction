@@ -4,7 +4,12 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "hardhat test",
+    "test:parallel": "hardhat test --parallel",
+    "compile": "hardhat compile",
+    "clean": "hardhat clean",
+    "deploy:transparent:sepolia": "hardhat run scripts/deploy-transparent-proxy-sepolia.ts --network sepolia",
+    "deploy:uups:sepolia": "hardhat run scripts/deploy-uups-proxy-sepolia.ts --network sepolia"
   },
   "repository": {
     "type": "git",
@@ -20,6 +25,7 @@
   "devDependencies": {
     "@nomicfoundation/hardhat-ethers": "^4.0.6",
     "@nomicfoundation/hardhat-ignition": "^3.1.0",
+    "@nomicfoundation/hardhat-network-helpers": "^3.0.4",
     "@nomicfoundation/hardhat-toolbox-mocha-ethers": "^3.0.3",
     "@types/chai": "^5.2.3",
     "@types/chai-as-promised": "^8.0.2",
@@ -35,6 +41,8 @@
   "type": "module",
   "dependencies": {
     "@chainlink/contracts": "^1.5.0",
-    "@openzeppelin/contracts": "^5.6.1"
+    "@openzeppelin/contracts": "^5.6.1",
+    "@openzeppelin/contracts-upgradeable": "^5.6.1",
+    "dotenv": "^17.3.1"
   }
 }

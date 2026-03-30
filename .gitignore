@@ -15,8 +15,11 @@
 
 # Typechain output
 /types
+/typechain-types
 
 # Hardhat coverage reports
 /coverage
-
+/.env
 /.DS_Store
+/ignition/deployments/chain-11155111
+/scripts
