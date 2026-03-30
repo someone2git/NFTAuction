@@ -79,13 +79,13 @@ contract NFTAuction is Initializable {
         require(paymentToken != address(0), "invalid payment token");
         require(auctions[auctionId].seller == address(0), "auction started");
 
-        /// storage	链上持久存储，直接影响 auctions[auctionId]
+        /// storage     链上持久存储，直接影响 auctions[auctionId]
         Auction storage auction = auctions[auctionId];
         auction.nft = IERC721(nft);
         auction.nftId = nftId;
         auction.seller = payable(seller);
         auction.startingTime = block.timestamp;
-        // 将美元价格转换为8位小数格式（Chainlink标准）
+        // 将美元价格转换为 8 位小数格式（Chainlink 标准）
         auction.startingPriceInDollar = startPriceInDollar * 10**8;
         auction.duration = duration;
         auction.paymentToken = IERC20(paymentToken);

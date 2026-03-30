@@ -8,6 +8,7 @@ import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts/proxy/utils/UUPSUpgradeable.sol";
 import {AggregatorV3Interface} from "@chainlink/contracts/src/v0.8/shared/interfaces/AggregatorV3Interface.sol";
 
+///逻辑于NFTAuction类似，主要uups部分不同
 contract NFTAuctionUUPS is Initializable, UUPSUpgradeable {
 
     // /// 管理员地址
@@ -39,10 +40,9 @@ contract NFTAuctionUUPS is Initializable, UUPSUpgradeable {
 
     uint256 public auctionId;
     ///uups相关属性
-    address private _owner;
+    address private _owner; 
 
     event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
-
 
     modifier onlyOwner() {
         require(msg.sender == owner(), "not owner");
@@ -59,12 +59,13 @@ contract NFTAuctionUUPS is Initializable, UUPSUpgradeable {
         emit OwnershipTransferred(address(0), admin_);
     }
     ///uups相关
+    ///真正升级的方法再UUPSUpgradeable实现，这里重写，主要是做onlyowner权限验证
     function _authorizeUpgrade(address) internal override onlyOwner {}
 
     function owner() public view returns (address) {
         return _owner;
     }
-
+    ///转换owner，可能有多种情况，所以单独方法
     function transferOwnership(address newOwner) external onlyOwner {
         require(newOwner != address(0), "invalid new owner");
         address oldOwner = _owner;
