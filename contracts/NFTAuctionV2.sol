@@ -5,8 +5,6 @@ import "./NFTAuction.sol";
 
 contract NFTAuctionV2 is NFTAuction {
 
-    constructor(address admin_) NFTAuction(admin_) {}
-
     function getVersion() external pure override returns (string memory) {
         return "MetaNFTAuctionV2";
     }

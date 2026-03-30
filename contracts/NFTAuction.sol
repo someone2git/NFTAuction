@@ -43,10 +43,15 @@ contract NFTAuction is Initializable {
         _;
     }
 
-    constructor(address admin_) {
+    constructor() {
+       _disableInitializers();
+    }
+
+    function initialize(address admin_) external initializer {
         require(admin_ != address(0), "invalid admin");
         admin = admin_;
     }
+
     /// 预言机 相关方法
     function setTokenOracle(address token, address oracle) external onlyAdmin {
         require(oracle != address(0), "invalid oracle");
