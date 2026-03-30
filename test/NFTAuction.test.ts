@@ -27,8 +27,15 @@ describe("NFTAuction", function () {
 
     async function deployFixture() {
         const NFTAuction = await ethers.getContractFactory("NFTAuction");
-        const auction = await NFTAuction.deploy(admin.address);
-        await auction.waitForDeployment();
+        const implementation = await NFTAuction.deploy();
+        await implementation.waitForDeployment();
+
+        const ERC1967Proxy = await ethers.getContractFactory("ERC1967ProxyWrapper");
+        const initData = implementation.interface.encodeFunctionData("initialize", [admin.address]);
+        const proxy = await ERC1967Proxy.deploy(await implementation.getAddress(), initData);
+        await proxy.waitForDeployment();
+
+        const auction = await ethers.getContractAt("NFTAuction", await proxy.getAddress());
         return auction;
     }
 
@@ -77,7 +84,12 @@ describe("NFTAuction", function () {
 
         it("Should reject zero address as admin", async function () {
             const NFTAuction = await ethers.getContractFactory("NFTAuction");
-            await expect(NFTAuction.deploy(ethers.ZeroAddress))
+            const implementation = await NFTAuction.deploy();
+            await implementation.waitForDeployment();
+
+            const ERC1967Proxy = await ethers.getContractFactory("ERC1967ProxyWrapper");
+            const initData = implementation.interface.encodeFunctionData("initialize", [ethers.ZeroAddress]);
+            await expect(ERC1967Proxy.deploy(await implementation.getAddress(), initData))
                 .to.be.revertedWith("invalid admin");
         });
 

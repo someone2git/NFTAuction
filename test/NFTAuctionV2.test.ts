@@ -36,19 +36,30 @@ describe("NFTAuctionV2", function () {
         await ethOracle.waitForDeployment();
         await usdcOracle.waitForDeployment();
 
-        // Deploy V1 implementation (uses constructor)
+        // Deploy V1 implementation and proxy
         const NFTAuction = await ethers.getContractFactory("NFTAuction");
-        auctionV1 = await NFTAuction.deploy(admin.address);
-        await auctionV1.waitForDeployment();
+        const v1Implementation = await NFTAuction.deploy();
+        await v1Implementation.waitForDeployment();
 
-        // Configure oracles
+        const ERC1967Proxy = await ethers.getContractFactory("ERC1967ProxyWrapper");
+        const v1InitData = v1Implementation.interface.encodeFunctionData("initialize", [admin.address]);
+        const v1Proxy = await ERC1967Proxy.deploy(await v1Implementation.getAddress(), v1InitData);
+        await v1Proxy.waitForDeployment();
+        auctionV1 = await ethers.getContractAt("NFTAuction", await v1Proxy.getAddress());
+
+        // Configure oracles on V1
         await auctionV1.connect(admin).setTokenOracle(await mockUSDC.getAddress(), await usdcOracle.getAddress());
         await auctionV1.connect(admin).setTokenOracle(ethers.ZeroAddress, await ethOracle.getAddress());
 
-        // Deploy V2 implementation (uses constructor)
+        // Deploy V2 implementation and proxy
         const NFTAuctionV2 = await ethers.getContractFactory("NFTAuctionV2");
-        auctionV2 = await NFTAuctionV2.deploy(admin.address);
-        await auctionV2.waitForDeployment();
+        const v2Implementation = await NFTAuctionV2.deploy();
+        await v2Implementation.waitForDeployment();
+
+        const v2InitData = v2Implementation.interface.encodeFunctionData("initialize", [admin.address]);
+        const v2Proxy = await ERC1967Proxy.deploy(await v2Implementation.getAddress(), v2InitData);
+        await v2Proxy.waitForDeployment();
+        auctionV2 = await ethers.getContractAt("NFTAuctionV2", await v2Proxy.getAddress());
 
         return { mockNFT, mockUSDC, ethOracle, usdcOracle };
     }
