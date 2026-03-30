@@ -5,12 +5,13 @@ import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
+import "@openzeppelin/contracts/proxy/utils/UUPSUpgradeable.sol";
 import {AggregatorV3Interface} from "@chainlink/contracts/src/v0.8/shared/interfaces/AggregatorV3Interface.sol";
 
-contract NFTAuction is Initializable {
+contract NFTAuctionUUPS is Initializable, UUPSUpgradeable {
 
-    /// 管理员地址
-    address admin;
+    // /// 管理员地址
+    // address admin;
 
     struct Auction{
         IERC721 nft;
@@ -37,18 +38,42 @@ contract NFTAuction is Initializable {
     event EndBid(uint256 indexed auctionId);
 
     uint256 public auctionId;
+    ///uups相关属性
+    address private _owner;
 
-    modifier onlyAdmin() {
-        require(msg.sender == admin, "not admin");
+    event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
+
+
+    modifier onlyOwner() {
+        require(msg.sender == owner(), "not owner");
         _;
     }
 
-    constructor(address admin_) {
-        require(admin_ != address(0), "invalid admin");
-        admin = admin_;
+    constructor() {
+        _disableInitializers();
     }
+
+    function initialize(address admin_) external initializer {
+        require(admin_ != address(0), "invalid admin");
+        _owner = admin_;
+        emit OwnershipTransferred(address(0), admin_);
+    }
+    ///uups相关
+    function _authorizeUpgrade(address) internal override onlyOwner {}
+
+    function owner() public view returns (address) {
+        return _owner;
+    }
+
+    function transferOwnership(address newOwner) external onlyOwner {
+        require(newOwner != address(0), "invalid new owner");
+        address oldOwner = _owner;
+        _owner = newOwner;
+        emit OwnershipTransferred(oldOwner, newOwner);
+    }
+
     /// 预言机 相关方法
-    function setTokenOracle(address token, address oracle) external onlyAdmin {
+    function setTokenOracle(address token, address oracle) external onlyOwner {
         require(oracle != address(0), "invalid oracle");
         tokenToOracle[token] = oracle;
     }
@@ -68,12 +93,12 @@ contract NFTAuction is Initializable {
 
     ///拍卖相关方法
     function startAuction(
-        address seller,
-        uint256 nftId,
-        address nft,
-        uint256 startPriceInDollar,
-        uint256 duration,
-        address paymentToken) external onlyAdmin {
+        address seller, 
+        uint256 nftId, 
+        address nft, 
+        uint256 startPriceInDollar, 
+        uint256 duration, 
+        address paymentToken) external onlyOwner {
         require(nft != address(0), "invalid nft");
         require(duration >= 30, "invalid duration");
         require(paymentToken != address(0), "invalid payment token");
